@@ -13,7 +13,8 @@ RUN apt update && apt install -y --no-install-recommends \
     libsndfile1 \
     python3.9-dev \
     python3.9-venv \
-    wget
+    wget \
+    unzip
 
 # Switch to a limited user
 ARG LIMITED_USER=luna
@@ -46,6 +47,10 @@ RUN mkdir -p ~/hay_say/temp_downloads/tools/uvr5/uvr5_weights/ && \
     wget https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/uvr5_weights/VR-DeEchoNormal.pth --directory-prefix=$HOME_DIR/hay_say/temp_downloads/tools/uvr5/uvr5_weights/ && \
     wget https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/uvr5_weights/onnx_dereverb_By_FoxJoy/vocals.onnx --directory-prefix=$HOME_DIR/hay_say/temp_downloads/tools/uvr5/uvr5_weights/onnx_dereverb_By_FoxJoy/
 
+# Download the pretrained G2PWModel (for Chinese generation)
+RUN mkdir -p ~/hay_say/temp_downloads/G2PWModel/ && \
+    wget https://paddlespeech.bj.bcebos.com/Parakeet/released_models/g2p/G2PWModel_1.1.zip --directory-prefix=$HOME_DIR/hay_say/temp_downloads/G2PWModel/
+
 # Create virtual environments for GPT-Sovits and Hay Say's gpt_so_vits_server.
 RUN python3.9 -m venv ~/hay_say/.venvs/gpt_so_vits; \
     python3.9 -m venv ~/hay_say/.venvs/gpt_so_vits_server
@@ -76,10 +81,16 @@ RUN ~/hay_say/.venvs/gpt_so_vits/bin/pip install \
     g2p-en==2.1.0 \
     pyopenjtalk==0.3.4 \
     onnxruntime==1.16.3 \
-    numpy==1.23.4
+    numpy==1.23.4 \
+    opencc==1.1.1 \
+    jamo==0.4.1 \
+    ko-pron==1.3 \
+    g2pk2==0.0.3 \
+    pyjyutping==1.0.0
 
-## install the 'averaged_perceptron_tagger_eng' tokenizer
+## install the 'averaged_perceptron_tagger_eng' and 'cmudict' tokenizers
 RUN ~/hay_say/.venvs/gpt_so_vits/bin/python -c "import nltk; nltk.download('averaged_perceptron_tagger_eng')"
+RUN ~/hay_say/.venvs/gpt_so_vits/bin/python -c "import nltk; nltk.download('cmudict')"
 
 # Install the dependencies for the GPT-Sovits interface code.
 RUN ~/hay_say/.venvs/gpt_so_vits_server/bin/pip install --timeout=300 --no-cache-dir \
@@ -100,7 +111,10 @@ RUN git clone -b main --single-branch -q https://github.com/hydrusbeta/gpt_so_vi
 # Move the pretrained models to the expected directories.
 RUN mv ~/hay_say/temp_downloads/GPT_SoVITS/pretrained_models/* ~/hay_say/gpt_so_vits/GPT_SoVITS/pretrained_models && \
     mkdir -p ~/hay_say/gpt_so_vits/tools/uvr5 && \
-    mv ~/hay_say/temp_downloads/tools/uvr5/* ~/hay_say/gpt_so_vits/tools/uvr5
+    mv ~/hay_say/temp_downloads/tools/uvr5/* ~/hay_say/gpt_so_vits/tools/uvr5 && \
+    mkdir -p ~/hay_say/gpt_so_vits/GPT_SoVITS/text/G2PWModel && \
+    unzip -j ~/hay_say/temp_downloads/G2PWModel/G2PWModel_1.1.zip -d ~/hay_say/gpt_so_vits/GPT_SoVITS/text/G2PWModel && \
+    rm ~/hay_say/temp_downloads/G2PWModel/G2PWModel_1.1.zip
 
 # Create directories that are used by the Hay Say interface code
 RUN mkdir -p ~/hay_say/gpt_so_vits/output/ && \
