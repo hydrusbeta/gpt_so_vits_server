@@ -92,6 +92,12 @@ RUN ~/hay_say/.venvs/gpt_so_vits/bin/pip install \
 RUN ~/hay_say/.venvs/gpt_so_vits/bin/python -c "import nltk; nltk.download('averaged_perceptron_tagger_eng')"
 RUN ~/hay_say/.venvs/gpt_so_vits/bin/python -c "import nltk; nltk.download('cmudict')"
 
+# Run pyopentalk to get it to initialize (which requires downloading some files) while we still have internet access
+RUN ~/hay_say/.venvs/gpt_so_vits/bin/python -c "import pyopenjtalk; pyopenjtalk.make_label(pyopenjtalk.run_frontend(''))"
+
+# Initialize a G2P object to initialize g2pk2 (which requires downloading some files) while we still have internet access
+RUN ~/hay_say/.venvs/gpt_so_vits/bin/python -c "from g2pk2 import G2p; G2p()"
+
 # Install the dependencies for the GPT-Sovits interface code.
 RUN ~/hay_say/.venvs/gpt_so_vits_server/bin/pip install --timeout=300 --no-cache-dir \
     hay_say_common==1.0.8 \
