@@ -145,7 +145,7 @@ def register_methods(cache):
                     'Cutting Strategy': {'enum': list(CUTTING_STRATEGIES_MAP.keys())},
                     'Top-K': {'type': 'integer', 'minimum': 1},
                     'Top-P': {'type': 'number', 'minimum': 0, 'maximum': 1},
-                    'Temperature': {'type': 'number', 'minimum': .00001, 'maximum': 1},
+                    'Temperature': {'type': 'number', 'minimum': 0, 'maximum': 1},
                     'Speed': {'type': 'number', 'minimum': .1, 'maximum': 5.0},
                     'Additional Reference Audios': {'type': 'array', 'items': {'type': 'string'}},
                     'Trait': {'type': 'string'},
